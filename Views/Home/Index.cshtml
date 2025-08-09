@@ -1,0 +1,63 @@
+@model IEnumerable<AssetMgmt.Models.AssetTransferLog>
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+<h1>Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center p-3 bg-primary">
+            <h4>Total Assets</h4>
+            <h2>@ViewBag.TotalAssets</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3 bg-dark text-white">
+            <h4>Total Locations</h4>
+            <h2>@ViewBag.TotalLocations</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3 bg-info">
+            <h4>Transfers This Month</h4>
+            <h2>@ViewBag.TotalTransfersThisMonth</h2>
+        </div>
+    </div>
+</div>
+
+<h3 class="mt-4">Latest Transfers</h3>
+<table class="table table-striped table-bordered table-hover align-middle">
+    <thead>
+        <tr>
+            <th scope="col" class="text-center">Date</th>
+            <th scope="col" class="text-center">Asset</th>
+            <th scope="col" class="text-center">Location From</th>
+            <th scope="col" class="text-center">Location To</th>
+            <th scope="col" class="text-center">By</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr scope="row">
+                <td class="text-center">@t.TransferDate.ToLocalTime()</td>
+                <td class="text-center">@t.Asset?.AssetName</td>
+                <td class="text-center">@(t.FromLocation != null ? t.FromLocation.Room : "-")</td>
+                <td class="text-center">@(t.ToLocation != null ? t.ToLocation.Room : "-")</td>
+                <td class="text-center">@t.TransferredByUser?.FullName</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="d-flex" style="gap: 10px;">
+    <a asp-controller="Assets" asp-action="Index" class="btn" style="background-color: #007bff; color: white; border:none;">
+        <i class="bi bi-eye"></i> View All Asset
+    </a>
+    <a asp-controller="Assets" asp-action="Create" class="btn" style="background-color: #218838; color: white; border:none;">
+        <i class="bi bi-plus-lg"></i> Add New Asset
+    </a>
+</div>

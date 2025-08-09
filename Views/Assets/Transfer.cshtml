@@ -1,0 +1,68 @@
+@model AssetMgmt.Models.AssetTransferLog
+@{
+    ViewData["Title"] = "Transfer Asset";
+    var locations = ViewBag.Locations as List<AssetMgmt.Models.Location>;
+
+}
+
+<h2>Transfer Asset - @Model.AssetID</h2>
+
+<form asp-action="Transfer" method="post">
+    <input type="hidden" asp-for="AssetID" />
+<div class="mb-3">
+    <label asp-for="FromLocationID" class="form-label">From Location</label>
+<select asp-for="FromLocationID" class="form-select" disabled>
+            @foreach (var loc in (IEnumerable<AssetMgmt.Models.Location>)ViewBag.Locations)
+            {
+                if (loc.LocationID == Model.FromLocationID)
+                {
+                    <option value="@loc.LocationID" selected="selected">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+                }
+                else
+                {
+                    <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+                }
+            }
+</select>
+<input type="hidden" asp-for="FromLocationID" />
+
+<div class="mb-3">
+    <label asp-for="ToLocationID" class="form-label">To Location</label>
+    <select asp-for="ToLocationID" class="form-select">
+        <option value="">-- Select To Location --</option>
+                @foreach (var loc in locations.Where(l => l.LocationID != Model.FromLocationID))
+                {
+                    if (loc.LocationID == Model.ToLocationID)
+                    {
+                        <option value="@loc.LocationID" selected="selected">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+                    }
+                    else
+                    {
+                        <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+                    }
+                }
+    </select>
+            <span asp-validation-for="ToLocationID" class="text-danger"></span>
+</div>
+
+
+
+        <div class="mb-3">
+            <label asp-for="TransferredBy" class="form-label">Transferred By (User ID)</label>
+            <select asp-for="TransferredBy" class="form-select"
+                    asp-items="@(new SelectList(ViewBag.Users, "UserID", "FullName"))">
+                <option value="">-- Select User --</option>
+            </select>
+            <span asp-validation-for="TransferredBy" class="text-danger"></span>
+        </div>
+
+
+    <div class="mb-3">
+        <label asp-for="Remarks" class="form-label">Remarks</label>
+        <input asp-for="Remarks" class="form-control" />
+        <span asp-validation-for="Remarks" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Transfer</button>
+    <a asp-controller="Assets" asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+</form>
