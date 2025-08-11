@@ -1,0 +1,52 @@
+﻿@model AssetMgmt.Models.UserMaster
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h2>Edit User</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form method="post" asp-action="EditUser">
+    <input type="hidden" asp-for="UserID" />
+
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" type="email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">New Password (leave blank to keep current password)</label>
+        <input name="password" id="password" type="password" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Designation" class="form-label"></label>
+        <input asp-for="Designation" class="form-control" />
+        <span asp-validation-for="Designation" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="locationId" class="form-label">Location</label>
+        <select name="locationId" class="form-select">
+            <option value="">-- Select Location --</option>
+            @foreach (var loc in (IEnumerable<AssetMgmt.Models.Location>)ViewBag.Locations)
+            {
+                <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>

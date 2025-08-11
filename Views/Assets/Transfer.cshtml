@@ -25,27 +25,31 @@
             }
 </select>
 <input type="hidden" asp-for="FromLocationID" />
-
-<div class="mb-3">
-    <label asp-for="ToLocationID" class="form-label">To Location</label>
-    <select asp-for="ToLocationID" class="form-select">
-        <option value="">-- Select To Location --</option>
-                @foreach (var loc in locations.Where(l => l.LocationID != Model.FromLocationID))
+    </div>
+        <div class="mb-3">
+        <label for="ToLocationID" class="form-label">To Location</label>
+        <select asp-for="ToLocationID" class="form-select">
+                <option value="">-- Select Location --</option>
+                @foreach (var loc in (IEnumerable<AssetMgmt.Models.Location>)ViewBag.Locations)
                 {
-                    if (loc.LocationID == Model.ToLocationID)
-                    {
-                        <option value="@loc.LocationID" selected="selected">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
-                    }
-                    else
-                    {
+                        <text>
                         <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
-                    }
+                        </text>
                 }
-    </select>
-            <span asp-validation-for="ToLocationID" class="text-danger"></span>
-</div>
-
-
+            </select>
+        <span asp-validation-for="ToLocationID" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label for="TransferredTo" class="form-label">Custodian</label>
+        <select asp-for="TransferredTo" class="form-select">
+                <option value="">-- Select Custodian --</option>
+                @foreach (var user in (IEnumerable<AssetMgmt.Models.UserMaster>)ViewBag.Users)
+                {
+                    <option value="@user.UserID">@user.FullName</option>
+                }
+            </select>
+        <span asp-validation-for="TransferredTo" class="text-danger"></span>
+        </div>
 
         <div class="mb-3">
             <label asp-for="TransferredBy" class="form-label">Transferred By (User ID)</label>
@@ -66,3 +70,39 @@
     <button type="submit" class="btn btn-primary">Transfer</button>
     <a asp-controller="Assets" asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
 </form>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function () {
+
+            function loadCustodians(ToLocationID) {
+                var $custodian = $('#TransferredTo');
+                $custodian.empty();
+                $custodian.append($('<option>', { value: '', text: '-- Select Custodian --' }));
+
+                if (ToLocationID) {
+                    $.ajax({
+                        url: '@Url.Action("GetCustodiansByLocation", "Assets")',
+                        data: { locationId: ToLocationID },
+                        success: function (data) {
+                            $.each(data, function (i, custodian) {
+                                $custodian.append($('<option>', {
+                                    value: custodian.userID,
+                                    text: custodian.fullName
+                                }));
+                            });
+                            var selectedCustodianId = '@Model.TransferredTo';
+                            if (selectedCustodianId) {
+                                $custodian.val(selectedCustodianId);
+                            }
+                        }
+                    });
+                }
+            }
+            $('#ToLocationID').change(function () {
+                loadCustodians($(this).val());
+            });
+            loadCustodians($('#ToLocationID').val());
+        });
+    </script>
+}

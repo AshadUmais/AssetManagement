@@ -12,13 +12,13 @@ namespace AssetMgmt.Models
         public string MajorCategory { get; set; }
         public string SubCategory { get; set; }
 
-        public int? LocationID { get; set; }
+        public int LocationID { get; set; }
         public Location Location { get; set; }
 
-        public int? CustodianID { get; set; }
+        public int CustodianID { get; set; }
         public UserMaster Custodian { get; set; }
 
-        public DateTime? PurchaseDate { get; set; }
+        public DateTime PurchaseDate { get; set; }
         public string Status { get; set; }
     }
 }

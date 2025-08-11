@@ -17,6 +17,7 @@
                 {
                     <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
                     <li class="nav-item"><a class="nav-link" asp-controller="Assets" asp-action="Index">Assets</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Auth" asp-action="UsersList">Users</a></li>
                 }
             </ul>
             <ul class="navbar-nav">
@@ -38,5 +39,8 @@
         
 </div>
     @RenderSection("Scripts", required: false)
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>

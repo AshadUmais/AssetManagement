@@ -26,6 +26,7 @@ namespace AssetMgmt.Controllers
                 .Include(t => t.FromLocation)
                 .Include(t => t.ToLocation)
                 .Include(t => t.TransferredByUser)
+                .Include(t => t.TransferredToUser)
                 .OrderByDescending(t => t.TransferDate)
                 .Take(5)
                 .ToListAsync();

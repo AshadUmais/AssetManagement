@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Create User";
+}
+
+<h2>Create User</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form method="post" asp-action="CreateUser">
+    <div class="mb-3">
+        <label for="fullName" class="form-label">Full Name</label>
+        <input type="text" name="fullName" id="fullName" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" name="email" id="email" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" name="password" id="password" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="Designation" class="form-label">Designation</label>
+        <input type="text" name="Designation" id="Designation" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="locationId" class="form-label">Location</label>
+        <select name="locationId" class="form-select">
+            <option value="">-- Select Location --</option>
+            @foreach (var loc in (IEnumerable<AssetMgmt.Models.Location>)ViewBag.Locations)
+            {
+                <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create User</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

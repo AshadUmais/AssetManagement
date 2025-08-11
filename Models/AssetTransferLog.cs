@@ -10,11 +10,13 @@ namespace AssetMgmt.Models
         public int AssetID { get; set; }
         public Asset Asset { get; set; }
 
-        public int? FromLocationID { get; set; }
+        public int FromLocationID { get; set; }
         public Location FromLocation { get; set; }
 
-        public int? ToLocationID { get; set; }
+        public int ToLocationID { get; set; }
         public Location ToLocation { get; set; }
+        public int TransferredTo { get; set; }
+        public UserMaster TransferredToUser { get; set; }
 
         public int TransferredBy { get; set; }
         public UserMaster TransferredByUser { get; set; }

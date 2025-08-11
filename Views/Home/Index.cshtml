@@ -36,6 +36,7 @@
             <th scope="col" class="text-center">Location From</th>
             <th scope="col" class="text-center">Location To</th>
             <th scope="col" class="text-center">By</th>
+            <th scope="col" class="text-center">To</th>
         </tr>
     </thead>
     <tbody>
@@ -47,6 +48,7 @@
                 <td class="text-center">@(t.FromLocation != null ? t.FromLocation.Room : "-")</td>
                 <td class="text-center">@(t.ToLocation != null ? t.ToLocation.Room : "-")</td>
                 <td class="text-center">@t.TransferredByUser?.FullName</td>
+                <td class="text-center">@t.TransferredToUser?.FullName</td>
             </tr>
         }
     </tbody>
@@ -59,5 +61,8 @@
     </a>
     <a asp-controller="Assets" asp-action="Create" class="btn" style="background-color: #218838; color: white; border:none;">
         <i class="bi bi-plus-lg"></i> Add New Asset
+    </a>
+    <a asp-controller="Auth" asp-action="UsersList" class="btn" style="background-color: #4F7A16; color: white; border:none;">
+        <i class="bi bi-eye"></i> View All Users
     </a>
 </div>

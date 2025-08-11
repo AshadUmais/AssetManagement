@@ -49,6 +49,12 @@ namespace AssetMgmt.Data
                 .HasForeignKey(t => t.TransferredBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<AssetTransferLog>()
+                .HasOne(t => t.TransferredToUser)
+                .WithMany()
+                .HasForeignKey(t => t.TransferredTo)
+                .OnDelete(DeleteBehavior.Restrict);
+
             base.OnModelCreating(modelBuilder);
         }
     }

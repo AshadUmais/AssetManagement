@@ -1,0 +1,49 @@
+﻿@model IEnumerable<AssetMgmt.Models.UserMaster>
+
+@{
+    ViewData["Title"] = "Users List";
+}
+
+<h2>Users List</h2>
+
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <a asp-action="CreateUser" class="btn" style="background-color: #218838; color: white; border:none;">
+        <i class="bi bi-plus-lg"></i> Create New User
+    </a>
+    <input type="text" id="searchInput" class="form-control w-25" placeholder="Search User..." />
+
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Designation</th>
+            <th>Assigned Building</th>
+            <th>Assigned Floor</th>
+            <th>Assigned Room</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserID</td>
+                <td>@user.FullName</td>
+                <td>@user.Email</td>
+                <td>@user.Designation</td>
+                <td>@user.AssignedBuilding</td>
+                <td>@user.AssignedFloor</td>
+                <td>@user.AssignedRoom</td>
+                <td>
+                    <a asp-action="EditUser" asp-route-id="@user.UserID" class="btn btn-primary btn-sm">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

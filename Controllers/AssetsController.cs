@@ -115,10 +115,12 @@ namespace AssetMgmt.Controllers
             ModelState.Remove(nameof(model.FromLocation));
             ModelState.Remove(nameof(model.Asset));
             ModelState.Remove(nameof(model.TransferredByUser));
+            ModelState.Remove(nameof(model.TransferredToUser));
             model.ToLocation = _ctx.Locations.FirstOrDefault(l => l.LocationID == model.ToLocationID);
             model.FromLocation = _ctx.Locations.FirstOrDefault(l => l.LocationID == model.FromLocationID);
             model.Asset = _ctx.Assets.FirstOrDefault(l => l.AssetID == model.AssetID);
             model.TransferredByUser = _ctx.UserMasters.FirstOrDefault(l => l.UserID == model.TransferredBy);
+            model.TransferredToUser = _ctx.UserMasters.FirstOrDefault(l => l.UserID == model.TransferredTo);
 
             if (!ModelState.IsValid)
             {
@@ -131,6 +133,7 @@ namespace AssetMgmt.Controllers
 
             asset.LocationID = model.ToLocationID;
             asset.Status = "Transferred";
+            asset.CustodianID = model.TransferredTo;
 
             model.TransferDate = System.DateTime.UtcNow;
             _ctx.AssetTransferLogs.Add(model);
@@ -145,6 +148,7 @@ namespace AssetMgmt.Controllers
                 .Include(t => t.FromLocation)
                 .Include(t => t.ToLocation)
                 .Include(t => t.TransferredByUser)
+                .Include(t => t.TransferredToUser)
                 .Where(t => t.AssetID == id)
                 .OrderByDescending(t => t.TransferDate)
                 .ToListAsync();
