@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 
 namespace AssetMgmt.Controllers
 {
@@ -17,7 +18,13 @@ namespace AssetMgmt.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var list = await _ctx.Assets.Include(a => a.Location).Include(a => a.Custodian).ToListAsync();
+            var list = await _ctx.Assets
+                .Include(a => a.Location)
+                .Include(a => a.Custodian)
+                .Include(a => a.Category)
+                .Include(a => a.SubCategory)
+                .ToListAsync();
+
             return View(list);
         }
 
@@ -25,6 +32,10 @@ namespace AssetMgmt.Controllers
         {
             ViewBag.Locations = _ctx.Locations.ToList();
             ViewBag.Users = _ctx.UserMasters.ToList();
+
+            ViewBag.Categories = new SelectList(_ctx.Category , "CategoryId", "Name");
+            ViewBag.SubCategories = new SelectList(Enumerable.Empty<SubCategory>(), "SubCategoryId", "Name");
+
             return View();
         }
 
@@ -33,21 +44,34 @@ namespace AssetMgmt.Controllers
         {
             ModelState.Remove(nameof(asset.Location));
             ModelState.Remove(nameof(asset.Custodian));
+            ModelState.Remove(nameof(asset.Category));
+            ModelState.Remove(nameof(asset.SubCategory));
+
             asset.Location = await _ctx.Locations.FirstOrDefaultAsync(l => l.LocationID == asset.LocationID);
-
             if (asset.Location == null)
-            {
                 ModelState.AddModelError("LocationID", "Selected Location does not exist.");
-            }
-            asset.Custodian = await _ctx.UserMasters.FirstOrDefaultAsync(u => u.UserID == asset.CustodianID);
 
+            asset.Custodian = await _ctx.UserMasters.FirstOrDefaultAsync(u => u.UserID == asset.CustodianID);
             if (asset.Custodian == null)
-            {
                 ModelState.AddModelError("CustodianID", "Selected Custodian does not exist.");
-            }
-            if (!ModelState.IsValid) {
+
+            asset.Category = await _ctx.Category .FirstOrDefaultAsync(c => c.CategoryId == asset.CategoryId);
+            if (asset.Category == null)
+                ModelState.AddModelError("CategoryId", "Selected Category does not exist.");
+
+            asset.SubCategory = await _ctx.SubCategory.FirstOrDefaultAsync(sc => sc.SubCategoryId == asset.SubCategoryId);
+            if (asset.SubCategory == null)
+                ModelState.AddModelError("SubCategoryId", "Selected SubCategory does not exist.");
+
+            if (!ModelState.IsValid)
+            {
                 ViewBag.Locations = _ctx.Locations.ToList();
                 ViewBag.Users = _ctx.UserMasters.ToList();
+                ViewBag.Categories = new SelectList(_ctx.Category , "CategoryId", "Name");
+                ViewBag.SubCategories = asset.CategoryId > 0
+                    ? new SelectList(_ctx.SubCategory.Where(sc => sc.CategoryId == asset.CategoryId), "SubCategoryId", "Name")
+                    : new SelectList(Enumerable.Empty<SubCategory>(), "SubCategoryId", "Name");
+
                 return View(asset);
             }
 
@@ -58,17 +82,26 @@ namespace AssetMgmt.Controllers
 
         public IActionResult Edit(int id)
         {
-            var asset = _ctx.Assets.Include(a => a.Location).FirstOrDefault(a => a.AssetID == id);
+            var asset = _ctx.Assets
+                .Include(a => a.Location)
+                .Include(a => a.Category)
+                .Include(a => a.SubCategory)
+                .FirstOrDefault(a => a.AssetID == id);
+
             if (asset == null) return NotFound();
 
             ViewBag.Locations = _ctx.Locations.ToList();
-
             var building = asset.Location?.Building ?? "";
             ViewBag.Users = _ctx.UserMasters.Where(u => u.AssignedBuilding == building).ToList();
 
+            ViewBag.Categories = new SelectList(_ctx.Category , "CategoryId", "Name", asset.CategoryId);
+            ViewBag.SubCategories = new SelectList(
+                _ctx.SubCategory.Where(sc => sc.CategoryId == asset.CategoryId),
+                "SubCategoryId", "Name", asset.SubCategoryId
+            );
+
             return View(asset);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -76,25 +109,42 @@ namespace AssetMgmt.Controllers
         {
             ModelState.Remove(nameof(asset.Location));
             ModelState.Remove(nameof(asset.Custodian));
-            asset.Location = await _ctx.Locations.FirstOrDefaultAsync(l => l.LocationID == asset.LocationID);
+            ModelState.Remove(nameof(asset.Category));
+            ModelState.Remove(nameof(asset.SubCategory));
 
-            if (asset.Location == null)
+            var category = await _ctx.Category.FirstOrDefaultAsync(c => c.CategoryId == asset.CategoryId);
+            if (category == null)
+                ModelState.AddModelError("CategoryId", "Selected Category does not exist.");
+
+            // Validate SubCategory
+            var subCategory = await _ctx.SubCategory.FirstOrDefaultAsync(sc => sc.SubCategoryId == asset.SubCategoryId);
+            if (subCategory == null)
+                ModelState.AddModelError("SubCategoryId", "Selected SubCategory does not exist.");
+
+            // Fetch the tracked Asset entity
+            var existingAsset = await _ctx.Assets.FirstOrDefaultAsync(a => a.AssetID == asset.AssetID);
+            if (existingAsset == null) return NotFound();
+
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("LocationID", "Selected Location does not exist.");
-            }
-            asset.Custodian = await _ctx.UserMasters.FirstOrDefaultAsync(u => u.UserID == asset.CustodianID);
-
-            if (asset.Custodian == null)
-            {
-                ModelState.AddModelError("CustodianID", "Selected Custodian does not exist.");
-            }
-
-            if (!ModelState.IsValid) {
                 ViewBag.Locations = _ctx.Locations.ToList();
                 ViewBag.Users = _ctx.UserMasters.ToList();
+                ViewBag.Categories = new SelectList(_ctx.Category, "CategoryId", "Name", asset.CategoryId);
+                ViewBag.SubCategories = asset.CategoryId > 0
+                    ? new SelectList(_ctx.SubCategory.Where(sc => sc.CategoryId == asset.CategoryId), "SubCategoryId", "Name", asset.SubCategoryId)
+                    : new SelectList(Enumerable.Empty<SubCategory>(), "SubCategoryId", "Name");
+
                 return View(asset);
             }
-            _ctx.Assets.Update(asset);
+
+            // Update only properties on the tracked entity
+            existingAsset.AssetName = asset.AssetName;
+            existingAsset.AssetTagNumber = asset.AssetTagNumber;
+            existingAsset.PurchaseDate = asset.PurchaseDate;
+            existingAsset.Status = asset.Status;
+            existingAsset.CategoryId = asset.CategoryId;
+            existingAsset.SubCategoryId = asset.SubCategoryId;
+
             await _ctx.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -103,9 +153,16 @@ namespace AssetMgmt.Controllers
         {
             var asset = await _ctx.Assets.Include(a => a.Location).FirstOrDefaultAsync(a => a.AssetID == id);
             if (asset == null) return NotFound();
+
             ViewBag.Locations = _ctx.Locations.ToList();
             ViewBag.Users = _ctx.UserMasters.ToList();
-            return View(new AssetTransferLog { AssetID = id, FromLocationID = asset.LocationID, TransferDate = System.DateTime.UtcNow });
+
+            return View(new AssetTransferLog
+            {
+                AssetID = id,
+                FromLocationID = asset.LocationID,
+                TransferDate = System.DateTime.UtcNow
+            });
         }
 
         [HttpPost]
@@ -116,6 +173,7 @@ namespace AssetMgmt.Controllers
             ModelState.Remove(nameof(model.Asset));
             ModelState.Remove(nameof(model.TransferredByUser));
             ModelState.Remove(nameof(model.TransferredToUser));
+
             model.ToLocation = _ctx.Locations.FirstOrDefault(l => l.LocationID == model.ToLocationID);
             model.FromLocation = _ctx.Locations.FirstOrDefault(l => l.LocationID == model.FromLocationID);
             model.Asset = _ctx.Assets.FirstOrDefault(l => l.AssetID == model.AssetID);
@@ -152,9 +210,11 @@ namespace AssetMgmt.Controllers
                 .Where(t => t.AssetID == id)
                 .OrderByDescending(t => t.TransferDate)
                 .ToListAsync();
+
             ViewBag.Asset = await _ctx.Assets.FindAsync(id);
             return View(logs);
         }
+
         [HttpGet]
         public IActionResult GetCustodiansByLocation(int locationId)
         {
@@ -172,6 +232,37 @@ namespace AssetMgmt.Controllers
                 .ToList();
 
             return Json(custodians);
+        }
+
+        [HttpGet]
+        public IActionResult GetCategories()
+        {
+            var categories = _ctx.Category 
+                .Select(c => new
+                {
+                    categoryId = c.CategoryId,
+                    name = c.Name
+                })
+                .OrderBy(c => c.name)
+                .ToList();
+
+            return Json(categories);
+        }
+
+        [HttpGet]
+        public IActionResult GetSubCategories(int categoryId)
+        {
+            var subCategories = _ctx.SubCategory
+                .Where(sc => sc.CategoryId == categoryId)
+                .Select(sc => new
+                {
+                    subCategoryId = sc.SubCategoryId,
+                    name = sc.Name
+                })
+                .OrderBy(sc => sc.name)
+                .ToList();
+
+            return Json(subCategories);
         }
     }
 }

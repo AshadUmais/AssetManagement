@@ -9,26 +9,36 @@
     <div class="form-group mb-2">
         <label asp-for="AssetName">Name</label>
         <input asp-for="AssetName" class="form-control" />
+        <span asp-validation-for="AssetName" class="text-danger"></span>
     </div>
     <div class="form-group mb-2">
         <label asp-for="AssetTagNumber">Tag Code</label>
         <input asp-for="AssetTagNumber" class="form-control" />
+        <span asp-validation-for="AssetTagNumber" class="text-danger"></span>
     </div>
+
     <div class="form-group mb-2">
-        <label asp-for="MajorCategory">Category</label>
-        <input asp-for="MajorCategory" class="form-control" />
+        <label asp-for="CategoryId">Category</label>
+        <select asp-for="CategoryId" class="form-control" id="CategoryDropdown">
+            <option value="">-- Select Category --</option>
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
+
     <div class="form-group mb-2">
-        <label asp-for="SubCategory">Sub Category</label>
-        <input asp-for="SubCategory" class="form-control" />
+        <label asp-for="SubCategoryId">Sub Category</label>
+        <select asp-for="SubCategoryId" class="form-control" id="SubCategoryDropdown">
+            <option value="">-- Select Subcategory --</option>
+        </select>
+        <span asp-validation-for="SubCategoryId" class="text-danger"></span>
     </div>
-    <!-- Purchase Date -->
+
     <div class="mb-3">
         <label asp-for="PurchaseDate" class="form-label">Purchase Date</label>
         <input asp-for="PurchaseDate" type="date" class="form-control" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
         <span asp-validation-for="PurchaseDate" class="text-danger"></span>
     </div>
-    <!-- Status -->
+
     <div class="mb-3">
         <label asp-for="Status" class="form-label"></label>
         <select asp-for="Status" class="form-select">
@@ -39,56 +49,76 @@
         </select>
         <span asp-validation-for="Status" class="text-danger"></span>
     </div>
-    <!-- Location Dropdown -->
+
     <div class="mb-3">
         <label for="LocationID" class="form-label">Location</label>
-        <select asp-for="LocationID" id="LocationID" name="LocationID" class="form-select">
+        <select asp-for="LocationID" id="LocationID" class="form-select">
             <option value="">-- Select Location --</option>
             @foreach (var loc in (IEnumerable<AssetMgmt.Models.Location>)ViewBag.Locations)
             {
-                    <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
+                <option value="@loc.LocationID">@($"{loc.Region} / {loc.Building} / {loc.Room}")</option>
             }
         </select>
         <span asp-validation-for="LocationID" class="text-danger"></span>
     </div>
-    <!-- Custodian Dropdown -->
+
     <div class="mb-3">
         <label for="CustodianID" class="form-label">Custodian</label>
-        <select asp-for="CustodianID" id="CustodianID" name="CustodianID" class="form-select" autocomplete="off">
+        <select asp-for="CustodianID" id="CustodianID" class="form-select">
             <option value="">-- Select Custodian --</option>
             @foreach (var user in (IEnumerable<AssetMgmt.Models.UserMaster>)ViewBag.Users)
             {
-                    <option value="@user.UserID">@user.FullName</option>
+                <option value="@user.UserID">@user.FullName</option>
             }
         </select>
         <span asp-validation-for="CustodianID" class="text-danger"></span>
     </div>
+
     <button type="submit" class="btn btn-primary">Create</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(function () {
+
+            // Load custodians by location
             $('#LocationID').change(function () {
                 var locationId = $(this).val();
-
                 var $custodian = $('#CustodianID');
-                $custodian.empty();
-                $custodian.append($('<option>', { value: '', text: '-- Select Custodian --' }));
+                $custodian.empty().append('<option value="">-- Select Custodian --</option>');
 
                 if (locationId) {
-                    $.ajax({
-                        url: '@Url.Action("GetCustodiansByLocation", "Assets")',
-                        data: { locationId: locationId },
-                        success: function (data) {
-                            $.each(data, function (i, custodian) {
-                                $custodian.append($('<option>', {
-                                    value: custodian.userID,
-                                    text: custodian.fullName
-                                }));
-                            });
-                        }
+                    $.getJSON('@Url.Action("GetCustodiansByLocation", "Assets")', { locationId: locationId }, function (data) {
+                        $.each(data, function (i, custodian) {
+                            $custodian.append($('<option>', {
+                                value: custodian.userID,
+                                text: custodian.fullName
+                            }));
+                        });
+                    });
+                }
+            });
+
+            // Load categories
+            $.getJSON('@Url.Action("GetCategories", "Assets")', function (categories) {
+                $.each(categories, function (i, cat) {
+                    $('#CategoryDropdown').append(`<option value="${cat.categoryId}">${cat.name}</option>`);
+                });
+            });
+
+            // Load subcategories on category change
+            $('#CategoryDropdown').change(function () {
+                var categoryId = $(this).val();
+                var $sub = $('#SubCategoryDropdown');
+                $sub.empty().append('<option value="">-- Select Subcategory --</option>');
+
+                if (categoryId) {
+                    $.getJSON('@Url.Action("GetSubCategories", "Assets")', { categoryId: categoryId }, function (subCats) {
+                        $.each(subCats, function (i, sc) {
+                            $sub.append(`<option value="${sc.subCategoryId}">${sc.name}</option>`);
+                        });
                     });
                 }
             });

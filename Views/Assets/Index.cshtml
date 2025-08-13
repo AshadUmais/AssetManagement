@@ -36,7 +36,7 @@
                     <td>@a.AssetID</td>
                     <td>@a.AssetName</td>
                     <td>@a.AssetTagNumber</td>
-                    <td>@a.MajorCategory / @a.SubCategory</td>
+                    <td>@a.Category.Name / @a.SubCategory.Name</td>
                     <td>@(a.Location != null ? $"{a.Location.Region} / {a.Location.Building} / {a.Location.Room}" : "-")</td>
                     <td>@(a.Custodian != null ? a.Custodian.FullName : "-")</td>
                     <td class="text-center">

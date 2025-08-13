@@ -18,26 +18,30 @@
 
     <div class="mb-3">
         <label asp-for="AssetName" class="form-label"></label>
-        <input asp-for="AssetName" class="form-control" autocomplete="off" value="@Model.AssetName" />
+        <input asp-for="AssetName" class="form-control" autocomplete="off" />
         <span asp-validation-for="AssetName" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="AssetTagNumber" class="form-label"></label>
-        <input asp-for="AssetTagNumber" class="form-control" autocomplete="off" value="@Model.AssetTagNumber" />
+        <input asp-for="AssetTagNumber" class="form-control" autocomplete="off" />
         <span asp-validation-for="AssetTagNumber" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="MajorCategory" class="form-label"></label>
-        <input asp-for="MajorCategory" class="form-control" autocomplete="off" value="@Model.MajorCategory" />
-        <span asp-validation-for="MajorCategory" class="text-danger"></span>
+        <label asp-for="CategoryId" class="form-label">Category</label>
+        <select asp-for="CategoryId" class="form-select" id="CategoryDropdown">
+            <option value="">-- Select Category --</option>
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="SubCategory" class="form-label"></label>
-        <input asp-for="SubCategory" class="form-control" autocomplete="off" value="@Model.SubCategory" />
-        <span asp-validation-for="SubCategory" class="text-danger"></span>
+        <label asp-for="SubCategoryId" class="form-label">Subcategory</label>
+        <select asp-for="SubCategoryId" class="form-select" id="SubCategoryDropdown">
+            <option value="">-- Select Subcategory --</option>
+        </select>
+        <span asp-validation-for="SubCategoryId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
@@ -57,43 +61,43 @@
         <span asp-validation-for="Status" class="text-danger"></span>
     </div>
 
-  
     <button type="submit" class="btn btn-primary">Save Changes</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   <script>
-        $(function () {
 
-            function loadCustodians(locationId) {
-                var $custodian = $('#CustodianID');
-                $custodian.empty();
-                $custodian.append($('<option>', { value: '', text: '-- Select Custodian --' }));
-
-                if (locationId) {
-                    $.ajax({
-                        url: '@Url.Action("GetCustodiansByLocation", "Assets")',
-                        data: { locationId: locationId },
-                        success: function (data) {
-                            $.each(data, function (i, custodian) {
-                                $custodian.append($('<option>', {
-                                    value: custodian.userID,
-                                    text: custodian.fullName
-                                }));
-                            });
-                            var selectedCustodianId = '@Model.CustodianID';
-                            if (selectedCustodianId) {
-                                $custodian.val(selectedCustodianId);
-                            }
-                        }
-                    });
-                }
-            }
-            $('#LocationID').change(function () {
-                loadCustodians($(this).val());
+    <script>
+        // Load Categories
+        $.getJSON('/Assets/GetCategories', function (categories) {
+            $.each(categories, function (i, category) {
+                $('#CategoryDropdown').append(`<option value="${category.categoryId}">${category.name}</option>`);
             });
-            loadCustodians($('#LocationID').val());
+
+            var existingCategoryId = '@Model.CategoryId';
+            if (existingCategoryId) {
+                $('#CategoryDropdown').val(existingCategoryId).trigger('change');
+            }
+        });
+
+        // On category change, load subcategories
+        $('#CategoryDropdown').change(function () {
+            var selectedCategoryId = $(this).val();
+            $('#SubCategoryDropdown').empty().append('<option value="">-- Select Subcategory --</option>');
+
+            if (selectedCategoryId) {
+                $.getJSON('/Assets/GetSubCategories', { categoryId: selectedCategoryId }, function (subCategories) {
+                    $.each(subCategories, function (i, subCat) {
+                        $('#SubCategoryDropdown').append(`<option value="${subCat.subCategoryId}">${subCat.name}</option>`);
+                    });
+
+                    var existingSubCategoryId = '@Model.SubCategoryId';
+                    if (existingSubCategoryId) {
+                        $('#SubCategoryDropdown').val(existingSubCategoryId);
+                    }
+                });
+            }
         });
     </script>
 }

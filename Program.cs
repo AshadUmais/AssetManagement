@@ -59,18 +59,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Seed database
-using (var scope = app.Services.CreateScope())
-{
-    var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
-    {
-        DbSeeder.Seed(ctx);
-    }
-    catch(Exception ex)
-    {
-        Console.WriteLine($"Seeding failed: {ex.Message}");
-    }
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    try
+//    {
+//        DbSeeder.Seed(ctx);
+//    }
+//    catch(Exception ex)
+//    {
+//        Console.WriteLine($"Seeding failed: {ex.Message}");
+//    }
+//}
 
 app.MapControllerRoute(
     name: "default",

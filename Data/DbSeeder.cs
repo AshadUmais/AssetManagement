@@ -38,9 +38,9 @@ namespace AssetMgmt.Data
             {
                 var assets = new[]
                 {
-                    new Asset { AssetName = "Lenovo Laptop", AssetTagNumber = "AE-LTP-01", MajorCategory = "IT", SubCategory = "Laptop", LocationID = ctx.Locations.First().LocationID, CustodianID = ctx.UserMasters.First().UserID, PurchaseDate = new DateTime(2023,1,1), Status = "Active" },
-                    new Asset { AssetName = "Office Chair", AssetTagNumber = "AE-CHR-02", MajorCategory = "Furniture", SubCategory = "Chair", LocationID = ctx.Locations.First().LocationID, CustodianID = ctx.UserMasters.First().UserID, PurchaseDate = new DateTime(2022,5,10), Status = "Active" },
-                    new Asset { AssetName = "Dell Monitor", AssetTagNumber = "AE-MTR-01", MajorCategory = "IT", SubCategory = "Monitor", LocationID = ctx.Locations.Skip(2).First().LocationID, CustodianID = ctx.UserMasters.Skip(1).First().UserID, PurchaseDate = new DateTime(2021,11,5), Status = "Active" }
+                    new Asset { AssetName = "Lenovo Laptop", AssetTagNumber = "AE-LTP-01",  LocationID = ctx.Locations.First().LocationID, CustodianID = ctx.UserMasters.First().UserID, PurchaseDate = new DateTime(2023,1,1), Status = "Active" },
+                    new Asset { AssetName = "Office Chair", AssetTagNumber = "AE-CHR-02",  LocationID = ctx.Locations.First().LocationID, CustodianID = ctx.UserMasters.First().UserID, PurchaseDate = new DateTime(2022,5,10), Status = "Active" },
+                    new Asset { AssetName = "Dell Monitor", AssetTagNumber = "AE-MTR-01", LocationID = ctx.Locations.Skip(2).First().LocationID, CustodianID = ctx.UserMasters.Skip(1).First().UserID, PurchaseDate = new DateTime(2021,11,5), Status = "Active" }
                 };
                 ctx.Assets.AddRange(assets);
                 ctx.SaveChanges();
